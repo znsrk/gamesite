@@ -22,10 +22,10 @@ export default function GameIframe({ gameId, title, onClose }) {
         ×
       </button>
 
-      {/* Game iframe */}
+      {/* Game iframe - Now uses the full URL directly */}
       <div className="w-full h-full max-w-6xl max-h-[90vh] bg-white rounded-lg overflow-hidden">
         <iframe
-          src={`https://gamemonetize.com/${gameId}/`}
+          src={gameId}
           title={title}
           className="w-full h-full"
           frameBorder="0"
@@ -36,3 +36,4 @@ export default function GameIframe({ gameId, title, onClose }) {
     </div>
   )
 }
+

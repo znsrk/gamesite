@@ -1,15 +1,11 @@
-
-
 'use client'
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function AdminPanel() {
-  console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-  console.log('Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Found' : 'Missing')
   const [formData, setFormData] = useState({
-    game_id: '',
+    iframe_code: '',
     title: '',
     description: '',
     thumbnail_url: '',
@@ -18,6 +14,21 @@ export default function AdminPanel() {
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+
+  // Extract game URL from iframe code
+  const extractGameUrl = (iframeCode) => {
+    try {
+      // Match src="..." or src='...' in iframe
+      const srcMatch = iframeCode.match(/src=["']([^"']+)["']/i)
+      if (srcMatch && srcMatch[1]) {
+        return srcMatch[1]
+      }
+      return null
+    } catch (error) {
+      console.error('Error extracting URL:', error)
+      return null
+    }
+  }
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -35,10 +46,17 @@ export default function AdminPanel() {
     setMessage({ type: '', text: '' })
 
     try {
+      // Extract the full game URL from iframe code
+      const gameUrl = extractGameUrl(formData.iframe_code)
+      
+      if (!gameUrl) {
+        throw new Error('Could not extract game URL from iframe code. Please check the format.')
+      }
+
       const { data, error } = await supabase
         .from('games')
         .insert([{
-          game_id: formData.game_id,
+          game_id: gameUrl, // Store the full URL instead of just ID
           title: formData.title,
           description: formData.description,
           thumbnail_url: formData.thumbnail_url,
@@ -53,7 +71,7 @@ export default function AdminPanel() {
       
       // Reset form
       setFormData({
-        game_id: '',
+        iframe_code: '',
         title: '',
         description: '',
         thumbnail_url: '',
@@ -62,7 +80,7 @@ export default function AdminPanel() {
       })
     } catch (error) {
       console.error('Error adding game:', error)
-      setMessage({ type: 'error', text: 'Error adding game. Please try again.' })
+      setMessage({ type: 'error', text: error.message || 'Error adding game. Please try again.' })
     } finally {
       setLoading(false)
     }
@@ -99,22 +117,22 @@ export default function AdminPanel() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Game ID from GameMonetize */}
+            {/* Iframe Code - NEW FIELD */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                GameMonetize Game ID *
+                GameMonetize Iframe Code *
               </label>
-              <input
-                type="text"
-                name="game_id"
-                value={formData.game_id}
+              <textarea
+                name="iframe_code"
+                value={formData.iframe_code}
                 onChange={handleChange}
                 required
-                placeholder="e.g., 12345-game-slug"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                rows="4"
+                placeholder='<iframe src="https://html5.gamemonetize.co/ruobz36yp9vi68oj2s6xj1efn2sjds1r/" width="854" height="480" scrolling="none" frameborder="0"></iframe>'
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none font-mono text-sm"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Find this in the GameMonetize iframe URL
+                Paste the entire iframe code from GameMonetize
               </p>
             </div>
 
@@ -211,13 +229,13 @@ export default function AdminPanel() {
 
         {/* Instructions Card */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-bold text-blue-900 mb-2">How to find GameMonetize Game ID:</h3>
+          <h3 className="font-bold text-blue-900 mb-2">How to add a game:</h3>
           <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
             <li>Go to <a href="https://gamemonetize.com" target="_blank" className="underline">GameMonetize.com</a></li>
-            <li>Browse their game library and select a game</li>
-            <li>Look for the iframe embed code</li>
-            <li>Copy the game ID from the URL (the part after gamemonetize.com/)</li>
-            <li>Paste it in the "Game ID" field above</li>
+            <li>Browse and select a game</li>
+            <li>Copy the entire <strong>&lt;iframe&gt;</strong> embed code</li>
+            <li>Paste it in the "Iframe Code" field above</li>
+            <li>Fill in the other details and click "Add Game"</li>
           </ol>
         </div>
       </div>
