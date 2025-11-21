@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
-
+import { createClient } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 export default function AdminPanel() {
+  const router = useRouter()
+  const supabase = createClient()
   const [formData, setFormData] = useState({
     iframe_code: '',
     title: '',
@@ -86,19 +88,27 @@ export default function AdminPanel() {
     }
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Admin Panel</h1>
-          <p className="text-gray-600">Add new games to your website</p>
-          <a 
-            href="/" 
-            className="inline-block mt-4 text-blue-600 hover:text-blue-800 transition"
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">Admin Panel</h1>
+            <p className="text-gray-600">Add new games to your website</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
           >
-            ← Back to Home
-          </a>
+            Logout
+          </button>
         </div>
 
         {/* Form Card */}
