@@ -1,9 +1,13 @@
+
+
 'use client'
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function AdminPanel() {
+  console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+  console.log('Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Found' : 'Missing')
   const [formData, setFormData] = useState({
     game_id: '',
     title: '',
