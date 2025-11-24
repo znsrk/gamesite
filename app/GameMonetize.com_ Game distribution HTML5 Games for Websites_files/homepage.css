@@ -1,0 +1,66 @@
+@media (min-width: 1000px) {
+  .game-card__cover{ position:relative;z-index:99;width: 179.667px;height: 134.750px;background: rgba(255,255,255,.1);display: block;}
+}
+#exclusive {
+    position: relative;
+    margin-top: -50px;
+    margin-bottom: 50px;
+    padding-top: 50px;
+    background-position: 50% 0;
+    background-repeat: no-repeat;
+    background-image: url(https://gamemonetize.com/images/bg-dots.png),radial-gradient(388px at 50%,#1172ff,rgba(17,114,255,.4) 50%,transparent);
+}
+
+#exclusive .col-lg-4 {
+    flex: 0 0 24.33333%;
+    max-width: 33.33333%;    
+    position: relative;
+    width: 100%;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-bottom: 15px;
+}
+#exclusive .game-card__cover {
+    width: 371.325px;
+   height: 179.663px;
+}
+#exclusive .game-card__logo {
+    width: 109px;
+   height: 109px;
+   border-radius: 25px;
+   margin-right: 25px;
+   box-shadow: 0 5px 40px rgba(17,114,255,.7);  
+   z-index: 99999;
+}
+
+#exclusive .game-card:focus .game-card__logo, #exclusive .game-card:hover .game-card__logo {
+    -webkit-transform: translate(-25px,25px) scale(.95);
+    transform: translate(-25px,25px) scale(.95);
+}
+#exclusive .game-card__logo {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    transition: -webkit-transform .4s;
+    transition: transform .4s;
+    transition: transform .4s,-webkit-transform .4s;
+    -webkit-transform: translateY(25px);
+    transform: translateY(25px);
+}
+.main-gamemonetize {
+    margin-bottom: 0px;
+}
+#exclusive  .game-card__title {
+    width: 190px;
+}
+.section__header {
+    margin-bottom: 30px;
+}
+#partners {
+    padding-top: 120px;
+}
+@media (max-width: 800px) {
+  #exclusive {
+        display: none;
+    }
+}

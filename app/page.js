@@ -12,6 +12,24 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [loading, setLoading] = useState(true)
 
+  // Emoji mapping for categories
+  const categoryEmojis = {
+    "All": "🎮",
+    "Action": "⚔️",
+    "Adventure": "🗺️",
+    "Puzzle": "🧩",
+    "Strategy": "♟️",
+    "Racing": "🏎️",
+    "Sports": "⚽",
+    "Arcade": "🕹️",
+    "Shooter": "🔫",
+    "RPG": "🛡️",
+    "Simulation": "🏙️",
+    "Casual": "☕",
+    "Board": "🎲",
+    "Card": "🃏"
+  }
+
   // Fetch games from Supabase
   useEffect(() => {
     fetchGames()
@@ -52,81 +70,97 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Retractable Sidebar */}
-      <div
-        className={`bg-white shadow-lg transition-all duration-300 ${
-          sidebarOpen ? 'w-64' : 'w-0'
-        } overflow-hidden`}
-      >
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Categories</h2>
-          <ul className="space-y-2">
-            {categories.map((category) => (
-              <li key={category}>
-                <button
-                  onClick={() => filterByCategory(category)}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                    selectedCategory === category
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {category}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-slate-100 font-nunito">
+      {/* Import Softer Font */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        .font-nunito {
+          font-family: 'Nunito', sans-serif;
+        }
+      `}</style>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-md p-4 flex items-center gap-4">
+      {/* Top Header - Full Width */}
+      <header className="h-16 bg-slate-950/80 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between z-50 flex-shrink-0">
+        <div className="flex items-center gap-4">
           {/* Toggle Sidebar Button */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition"
+            className="p-2 rounded-xl text-slate-400 hover:bg-white/10 hover:text-white transition"
+            aria-label="Toggle sidebar"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {sidebarOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
-          {/* Logo and Site Name */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">G</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800">GameSite</h1>
-          </div>
-        </header>
+          {/* Logo Area */}
+          <h1 className="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+            GameSite
+          </h1>
+        </div>
 
-        {/* Games Grid */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* Right Side Header Items (Placeholder for search/profile) */}
+        <div className="flex items-center gap-4">
+           <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">
+             U
+           </div>
+        </div>
+      </header>
+
+      {/* Main Content Area with Sidebar below Header */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* Sidebar */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            sidebarOpen ? 'w-52 lg:w-60 opacity-100' : 'w-0 opacity-0'
+          } bg-slate-950/40 border-r border-white/5 overflow-hidden flex flex-col`}
+        >
+          <div className="p-4 overflow-y-auto h-full">
+            <div className="flex items-center justify-between mb-4 px-2">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Library</h2>
+            </div>
+            <ul className="space-y-1">
+              {categories.map((category) => (
+                <li key={category}>
+                  <button
+                    onClick={() => filterByCategory(category)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-3 ${
+                      selectedCategory === category
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20'
+                        : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                    }`}
+                  >
+                    <span className="text-base">{categoryEmojis[category] || '🎮'}</span>
+                    <span>{category}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Games Grid Area */}
+        <main className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500 text-lg">Loading games...</p>
+              <p className="text-slate-400 font-semibold animate-pulse">Loading library...</p>
             </div>
           ) : filteredGames.length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500 text-lg">No games available</p>
+              <p className="text-slate-400 font-semibold">No games found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            // Updated Grid: More columns = Smaller cards
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
               {filteredGames.map((game) => (
                 <GameCard key={game.id} game={game} />
               ))}
             </div>
           )}
         </main>
+
       </div>
     </div>
   )
 }
-
