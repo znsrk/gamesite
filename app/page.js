@@ -7,10 +7,12 @@ import GameCard from '@/components/GameCard'
 export default function Home() {
   const [games, setGames] = useState([])
   const [filteredGames, setFilteredGames] = useState([])
+  const [visibleCount, setVisibleCount] = useState(40) // Start with 40 games
   const [categories, setCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Emoji mapping for categories
   const categoryEmojis = {
@@ -34,6 +36,20 @@ export default function Home() {
   useEffect(() => {
     fetchGames()
   }, [])
+
+  // Debounced search effect
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      performSearch()
+    }, 1000)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchQuery])
+
+  // Reset visible count when filtered games change (e.g. category switch)
+  useEffect(() => {
+    setVisibleCount(40)
+  }, [filteredGames])
 
   async function fetchGames() {
     try {
@@ -59,8 +75,46 @@ export default function Home() {
     }
   }
 
+  // Perform search against Supabase
+  async function performSearch() {
+    setLoading(true)
+    try {
+      let query = supabase
+        .from('games')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true })
+
+      if (searchQuery.trim()) {
+        const term = searchQuery.trim()
+        query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%`)
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+
+      setFilteredGames(data || [])
+      
+      // Only switch category if user is actively searching
+      if (searchQuery.trim()) {
+        setSelectedCategory('All')
+      }
+    } catch (error) {
+      console.error('Error searching games:', error.message || error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle manual submit (prevent reload, let effect handle search)
+  const handleSearch = (e) => {
+    e.preventDefault()
+  }
+
   // Filter games by category
   const filterByCategory = (category) => {
+    setSearchQuery('')
     setSelectedCategory(category)
     if (category === 'All') {
       setFilteredGames(games)
@@ -69,13 +123,31 @@ export default function Home() {
     }
   }
 
+  // Handle scroll for infinite loading
+  const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget
+    // Load more when user is near bottom (300px threshold)
+    if (scrollHeight - scrollTop <= clientHeight + 300) {
+      setVisibleCount(prev => Math.min(prev + 40, filteredGames.length))
+    }
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-slate-100 font-nunito">
-      {/* Import Softer Font */}
+      {/* Import Softer Font & Hide Scrollbar */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
         .font-nunito {
           font-family: 'Nunito', sans-serif;
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
         }
       `}</style>
 
@@ -94,9 +166,27 @@ export default function Home() {
           </button>
 
           {/* Logo Area */}
-          <h1 className="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-            GameSite
+          <h1 className="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 hidden sm:block">
+            eazy.games
           </h1>
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md mx-4">
+          <form onSubmit={handleSearch} className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search games..."
+              className="block w-full pl-10 pr-3 py-2 border border-white/10 rounded-xl leading-5 bg-white/5 text-slate-300 placeholder-slate-500 focus:outline-none focus:bg-white/10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+            />
+          </form>
         </div>
 
         {/* Right Side Header Items (Placeholder for search/profile) */}
@@ -116,7 +206,7 @@ export default function Home() {
             sidebarOpen ? 'w-52 lg:w-60 opacity-100' : 'w-0 opacity-0'
           } bg-slate-950/40 border-r border-white/5 overflow-hidden flex flex-col`}
         >
-          <div className="p-4 overflow-y-auto h-full">
+          <div className="p-4 overflow-y-auto h-full no-scrollbar">
             <div className="flex items-center justify-between mb-4 px-2">
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Library</h2>
             </div>
@@ -141,7 +231,10 @@ export default function Home() {
         </div>
 
         {/* Games Grid Area */}
-        <main className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <main 
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto p-6 no-scrollbar"
+        >
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-slate-400 font-semibold animate-pulse">Loading library...</p>
@@ -153,7 +246,7 @@ export default function Home() {
           ) : (
             // Updated Grid: More columns = Smaller cards
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-              {filteredGames.map((game) => (
+              {filteredGames.slice(0, visibleCount).map((game) => (
                 <GameCard key={game.id} game={game} />
               ))}
             </div>

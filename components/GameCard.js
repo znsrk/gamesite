@@ -51,10 +51,10 @@ const GameVideo = ({ gameId, containerId }) => {
           width: '100%',
           height: '100%',
           border: 'none',
-          borderRadius: '8px',
+          borderRadius: '15px',
           display: 'block',
           objectFit: 'cover', // Ensures video covers like the thumbnail
-          transform: 'scale(1.5)', // Added to zoom in slightly for closer-up effect
+          transform: 'scale(1.7)', // Added to zoom in slightly for closer-up effect
         }}
         muted
         playsInline
@@ -74,12 +74,6 @@ export default function GameCard({ game }) {
   const containerId = `gamemonetize-video-${game.id}`;
 
   const handleClick = (e) => {
-    // Prevent navigation if clicking on the video area
-    const target = e.target;
-    if (target.tagName === 'VIDEO' || target.closest('.video-overlay')) {
-      e.stopPropagation();
-      return;
-    }
     router.push(`/game/${game.id}`);
   };
 
@@ -129,10 +123,7 @@ export default function GameCard({ game }) {
         {isHovered && showVideo && walkthroughId && (
           <div 
             className="video-overlay absolute inset-0 z-20"
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Semi-transparent background */}
-            <div className="absolute inset-0 bg-black/80 z-10" />
             
             {/* Video container */}
             <div className="absolute inset-0 z-20 flex items-center justify-center p-3">
